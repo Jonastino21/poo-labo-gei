@@ -3,7 +3,7 @@ import { Outlet, Link } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import Navbar from '../components/layouts/navbar';
 
-import { HomeIcon, BookOpenIcon } from '@heroicons/react/24/outline'
+import { HomeIcon, BookOpenIcon, BookmarkIcon, ClockIcon } from '@heroicons/react/24/outline'
 
 const Dashboard = () => {
   const { user, logout } = useContext(AuthContext);
@@ -41,6 +41,27 @@ const Dashboard = () => {
                   <BookOpenIcon className="h-5 w-5 text-gray-500" />
                   
                    <span className="ml-3 font-medium">Ressources pédagogiques</span>
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  to="/dashboard/reservations"
+                  className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+                >
+                  <BookmarkIcon className="h-5 w-5 text-gray-500" />
+                  
+                   <span className="ml-3 font-medium">Réservations </span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/dashboard/reservations/history"
+                  className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md"
+                >
+                  <ClockIcon className="h-5 w-5 text-gray-500" />
+                  
+                   <span className="ml-3 font-medium">Historiques </span>
                 </Link>
               </li>
               {/* … autres liens éventuels … */}

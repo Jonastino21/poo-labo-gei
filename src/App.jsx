@@ -8,6 +8,11 @@ import LoginContainer from './pages/auth/LoginContainer';
 import Dashboard from './pages/Dashboard';
 import ResourceManager from './pages/resources/ResourceManager-maxwell';
 import { ToastContainer } from 'react-toastify'
+import AddResourceTypeForm from './components/Resources/Form/AddResourceType-maxwell';
+import ReservationForm from './components/Resources/Form/ReservationForm-maxwell';
+import ReservationsList from './components/Resources/List/ReservationsList-maxwell';
+import ReservationHistory from './components/Resources/List/ReservationHistory-maxwell';
+import RegisterContainer from './pages/auth/RegisterContainer';
 
 function App() {
   return (
@@ -16,8 +21,9 @@ function App() {
         <Routes>
           {/* Route publique vers le container (qui rend LoginView) */}
           <Route path="/login" element={<LoginContainer />} />
+          <Route path="/register" element={<RegisterContainer/>}/>
 
-          <Route element={<ProtectedRoute />}>
+          {/* {<Route element={<ProtectedRoute />}>} */}
             <Route path="/dashboard" element={<Dashboard />}>
               <Route
                 index
@@ -28,8 +34,12 @@ function App() {
                 }
               />
               <Route path="resources" element={<ResourceManager />} />
+              <Route path='resources/type/create' element={<AddResourceTypeForm/>}/>
+              <Route path='reservation/create' element={<ReservationForm/>}/>
+              <Route path='reservations' element={<ReservationsList/>}/>
+              <Route path='reservations/history' element={<ReservationHistory/>}/>
             </Route>
-          </Route>
+          {/* </Route> */}
 
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import ResourceFormContainer from '../Form/ResourceFormContainer-maxwell'
 import UsageHistory from '../UsageHistory/UsageHistoryContainer-maxwell'
 
@@ -18,6 +18,8 @@ const ResourceListView = ({
   showHistoryFor,
   openHistory,
   closeHistory,
+  selectedTab,
+  setSelectedTab
 }) => {
   return (
     <div className="p-6">
@@ -25,106 +27,163 @@ const ResourceListView = ({
         Gestion des ressources pédagogiques
       </h1>
 
-      <div className="flex flex-wrap items-center gap-3 mb-6">
-        <input
-          type="text"
-          placeholder="Filtrer par type..."
-          value={filterType}
-          onChange={(e) => onFilterTypeChange(e.target.value)}
-          className="border px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-300"
-        />
-
-        <select
-          value={filterEtat}
-          onChange={(e) => onFilterEtatChange(e.target.value)}
-          className="border px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-300"
-        >
-          <option value="">Tous états</option>
-          <option value="Disponible">Disponible</option>
-          <option value="En cours d’utilisation">En cours d’utilisation</option>
-          <option value="En maintenance">En maintenance</option>
-        </select>
-
+      <div className="flex gap-3 mb-4">
         <button
-          onClick={() => openForm(null)}
-          className="ml-auto bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition duration-150"
+          onClick={() => setSelectedTab('equipement')}
+          className={`px-4 py-2 rounded ${selectedTab === 'equipement' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
         >
-          + Nouvelle ressource
+          Équipements
+        </button>
+        <button
+          onClick={() => setSelectedTab('consommable')}
+          className={`px-4 py-2 rounded ${selectedTab === 'consommable' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+        >
+          Consommables
         </button>
       </div>
 
-      {loading ? (
-        <p>Chargement…</p>
-      ) : (
-        <table className="min-w-full border-collapse text-left">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border px-3 py-2">Nom</th>
-              <th className="border px-3 py-2">Type</th>
-              <th className="border px-3 py-2">État</th>
-              <th className="border px-3 py-2">Disponibilité</th>
-              <th className="border px-3 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredResources.map((res) => (
-              <tr key={res.id} className="hover:bg-gray-50">
-                <td className="border px-3 py-2">{res.nom}</td>
-                <td className="border px-3 py-2">{res.type}</td>
-                <td className="border px-3 py-2">{res.etat}</td>
-                <td className="border px-3 py-2">
-                  {res.disponibilite ? (
-                    <span className="text-green-600 font-medium">✔️</span>
-                  ) : (
-                    <span className="text-red-600 font-medium">✖️</span>
-                  )}
-                </td>
-                <td className="border px-3 py-2 space-x-2">
-                  <button
-                    onClick={() => openForm(res)}
-                    className="text-sm bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded transition duration-150"
-                  >
-                    Éditer
-                  </button>
-                  <button
-                    onClick={() => handleDelete(res.id)}
-                    className="text-sm bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded transition duration-150"
-                  >
-                    Supprimer
-                  </button>
-                  <button
-                    onClick={() => openHistory(res.id)}
-                    className="text-sm bg-indigo-500 hover:bg-indigo-600 text-white px-2 py-1 rounded transition duration-150"
-                  >
-                    Historique
-                  </button>
-                </td>
-              </tr>
-            ))}
+      {selectedTab === 'equipement' && (
+        <>
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            <input
+              type="text"
+              placeholder="Filtrer par type..."
+              value={filterType}
+              onChange={(e) => onFilterTypeChange(e.target.value)}
+              className="border px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-300"
+            />
 
-            {filteredResources.length === 0 && (
-              <tr>
-                <td colSpan="5" className="text-center py-4">
-                  Aucune ressource trouvée.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            <select
+              value={filterEtat}
+              onChange={(e) => onFilterEtatChange(e.target.value)}
+              className="border px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-300"
+            >
+              <option value="">Tous états</option>
+              <option value="Disponible">Disponible</option>
+              <option value="En cours d’utilisation">En cours d’utilisation</option>
+              <option value="En maintenance">En maintenance</option>
+            </select>
+
+            <button
+              onClick={() => openForm(null)}
+              className="ml-auto bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition duration-150"
+            >
+              + Nouvelle ressource
+            </button>
+          </div>
+
+          {loading ? (
+            <p>Chargement…</p>
+          ) : (
+            <table className="min-w-full border-collapse text-left">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border px-3 py-2">Code</th>
+                  <th className="border px-3 py-2">Type</th>
+                  <th className="border px-3 py-2">État</th>
+                  <th className="border px-3 py-2">Disponibilité</th>
+                  <th className="border px-3 py-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredResources.map((res) => (
+                  <tr key={res.id} className="hover:bg-gray-50">
+                    <td className="border px-3 py-2">{res.nom}</td>
+                    <td className="border px-3 py-2">{res.type}</td>
+                    <td className="border px-3 py-2">{res.etat}</td>
+                    <td className="border px-3 py-2">
+                      {res.disponibilite ? (
+                        <span className="text-green-600 font-medium">✔️</span>
+                      ) : (
+                        <span className="text-red-600 font-medium">✖️</span>
+                      )}
+                    </td>
+                    <td className="border px-3 py-2 space-x-2">
+                      <button
+                        onClick={() => openForm(res)}
+                        className="text-sm bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded"
+                      >
+                        Éditer
+                      </button>
+                      <button
+                        onClick={() => handleDelete(res.id)}
+                        className="text-sm bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded"
+                      >
+                        Supprimer
+                      </button>
+                      <button
+                        onClick={() => openHistory(res.id)}
+                        className="text-sm bg-indigo-500 hover:bg-indigo-600 text-white px-2 py-1 rounded"
+                      >
+                        Historique
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {filteredResources.length === 0 && (
+                  <tr>
+                    <td colSpan="5" className="text-center py-4">Aucune ressource trouvée.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </>
       )}
-           
+
+      {selectedTab === 'consommable' && (
+        <>
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => openForm(null)}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded transition duration-150"
+            >
+              + Nouveau consommable
+            </button>
+          </div>
+
+          <table className="min-w-full border-collapse text-left">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border px-3 py-2">Nom</th>
+                <th className="border px-3 py-2">Quantité</th>
+                <th className="border px-3 py-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {resources
+                .filter((res) => res.type === 'Consommable')
+                .map((res) => (
+                  <tr key={res.id} className="hover:bg-gray-50">
+                    <td className="border px-3 py-2">{res.nom}</td>
+                    <td className="border px-3 py-2">{res.quantite}</td>
+                    <td className="border px-3 py-2 space-x-2">
+                      <button
+                        onClick={() => openForm(res)}
+                        className="text-sm bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded"
+                      >
+                        Éditer
+                      </button>
+                      <button
+                        onClick={() => handleDelete(res.id)}
+                        className="text-sm bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded"
+                      >
+                        Supprimer
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </>
+      )}
+
       {showForm && (
-        <ResourceFormContainer
-          resource={editingResource}
-          onClose={closeForm}
-        />
+        <ResourceFormContainer resource={editingResource} onClose={closeForm} />
       )}
 
       {showHistoryFor && (
-        <UsageHistory
-          resourceId={showHistoryFor}
-          onClose={closeHistory}
-        />
+        <UsageHistory resourceId={showHistoryFor} onClose={closeHistory} />
       )}
     </div>
   )

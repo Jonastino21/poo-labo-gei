@@ -1,15 +1,17 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import LoginView from './LoginView';
+import RegisterView from './RegisterView';
 
-const LoginContainer = () => {
-  const { login } = useContext(AuthContext);
+const RegisterContainer = () => {
+  const { register } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    username: '',
+    password: '',
+    confirmPassword: ''
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -25,8 +27,21 @@ const LoginContainer = () => {
     setError(null);
 
     try {
-      await login(formData);
-      navigate('/dashboard'); // Redirection après connexion réussie
+      // Validation client
+      if (formData.password !== formData.confirmPassword) {
+        throw new Error('Les mots de passe ne correspondent pas');
+      }
+
+      await register({
+        email: formData.email,
+        username: formData.username,
+        password: formData.password
+      });
+
+      // Redirection gérée dans AuthContext après auto-login
+      // ou directement ici si pas d'auto-login
+      navigate('/dashboard');
+      
     } catch (err) {
       setError(err.message);
     } finally {
@@ -35,9 +50,8 @@ const LoginContainer = () => {
   };
 
   return (
-    <LoginView
-      email={formData.email}
-      password={formData.password}
+    <RegisterView
+      {...formData}
       handleChange={handleChange}
       error={error}
       loading={loading}
@@ -46,4 +60,4 @@ const LoginContainer = () => {
   );
 };
 
-export default LoginContainer;
+export default RegisterContainer;

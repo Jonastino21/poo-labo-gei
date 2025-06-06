@@ -1,86 +1,81 @@
-import React, { useState, useEffect } from 'react'
-import { fetchResources, deleteResource } from '../../../api/ressources-maxwell'
-import ResourceListView from './RessourceListView-maxwell'
+import React, { useEffect, useState } from 'react'
+import EquipmentTable from './EquipmentList-maxwell'
+import ConsumableTable from './CunsomableList-maxwell'
+import { api } from '../../../config'
 
 const ResourceListContainer = () => {
-  const [resources, setResources]               = useState([])
-  const [loading, setLoading]                   = useState(true)
-  const [filterType, setFilterType]             = useState('')
-  const [filterEtat, setFilterEtat]             = useState('')
-  const [showForm, setShowForm]                 = useState(false)
-  const [editingResource, setEditingResource]   = useState(null)
-  const [showHistoryFor, setShowHistoryFor]     = useState(null)
-
-  const loadResources = async () => {
-    setLoading(true)
-    try {
-      const data = await fetchResources()
-      setResources(data)
-    } catch (err) {
-      console.error('Erreur récupération ressources :', err)
-    }
-    setLoading(false)
-  }
+  const [resources, setResources] = useState({ equipements: [], consommables: [] })
+  const [viewMode, setViewMode] = useState('equipements')
 
   useEffect(() => {
-    loadResources()
+    const fetchEquipements = async () => {
+      try {
+        const res = await api.get('/api/equipments')
+        console.log(res.data);
+        setResources(prev => ({ ...prev, equipements: res.data }))
+      } catch (error) {
+        console.error('Erreur lors du chargement des équipements:', error)
+      }
+    }
+
+    const fetchConsommables = async () => {
+      try {
+        const res = await api.get('/api/consommables')
+        setResources(prev => ({ ...prev, consommables: res.data }))
+      } catch (error) {
+        console.error('Erreur lors du chargement des consommables:', error)
+      }
+    }
+
+    fetchEquipements()
+    fetchConsommables()
   }, [])
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Confirmer la suppression de cette ressource ?')) return
-    try {
-      await deleteResource(id)
-      loadResources()
-    } catch (err) {
-      console.error('Erreur suppression :', err)
-    }
-  }
 
-  const openForm = (resource = null) => {
-    setEditingResource(resource)
-    setShowForm(true)
-  }
-
-  const closeForm = () => {
-    setEditingResource(null)
-    setShowForm(false)
-    loadResources()
+  const openForm = (item) => {
+    const handleEditEquipement = async ({ id, status, localisation }) => {
+      await api.put(`/api/equipements/${id}`, { status, localisation });
+    };
+    handleEditEquipement();
   }
 
   const openHistory = (id) => {
-    setShowHistoryFor(id)
+    console.log('Historique de:', id)
+    // afficher l'historique ici
   }
-
-  const closeHistory = () => {
-    setShowHistoryFor(null)
-  }
-
-  const filteredResources = resources.filter((r) => {
-    const okType = filterType
-      ? r.type.toLowerCase().includes(filterType.toLowerCase())
-      : true
-    const okEtat = filterEtat ? r.etat === filterEtat : true
-    return okType && okEtat
-  })
 
   return (
-    <ResourceListView
-      resources={resources}
-      loading={loading}
-      filterType={filterType}
-      filterEtat={filterEtat}
-      onFilterTypeChange={setFilterType}
-      onFilterEtatChange={setFilterEtat}
-      openForm={openForm}
-      handleDelete={handleDelete}
-      filteredResources={filteredResources}
-      showForm={showForm}
-      editingResource={editingResource}
-      closeForm={closeForm}
-      showHistoryFor={showHistoryFor}
-      openHistory={openHistory}
-      closeHistory={closeHistory}
-    />
+    <div className="p-4">
+
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={() => setViewMode('equipements')}
+          className={`px-4 py-2 rounded ${viewMode === 'equipements' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+        >
+          Équipements
+        </button>
+        <button
+          onClick={() => setViewMode('consommables')}
+          className={`px-4 py-2 rounded ${viewMode === 'consommables' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+        >
+          Consommables
+        </button>
+      </div>
+
+      
+      {viewMode === 'equipements' ? (
+        <EquipmentTable
+          equipements={resources.equipements}
+          onEdit={openForm}
+          onHistory={openHistory}
+        />
+      ) : (
+        <ConsumableTable
+          consommables={resources.consommables}
+          onEdit={openForm}
+        />
+      )}
+    </div>
   )
 }
 
